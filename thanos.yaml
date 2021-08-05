@@ -9,24 +9,13 @@ minio:
   enabled: true
   secretKey:
     password: ygxNm4ZIebW7kEbV33IfuV7CcS9nsLoG
-objstoreConfig: |-
-  type: AZURE
-  config:
-    storage_account: "airflowformflowpoc"
-    storage_account_key: "4OmGoOCdRRIMoP4fP6ZnO0JkzMAMTmaH2FmVwf8nvsQGtKsRpgLearn/4ehPO9zZO7/HHnpLtt/TxQ/GW502IQ=="
-    container: "thanos-objstore"
-    max_retries: 1
-    endpoint: "blob.core.windows.net"
+objstoreConfig: ""
 query:
   service:
     http:
       port: 80
     type: LoadBalancer
-  stores:
-  - 40.88.225.203:10901
-  - 40.88.225.254:10901
-  - 20.85.144.253:10901
-  - 52.224.35.124:10901
+  stores: []
 ruler:
   alertmanagers:
   - http://alertmanager:9093
