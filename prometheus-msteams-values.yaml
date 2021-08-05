@@ -1,0 +1,59 @@
+connectors:
+- default: https://jnj.webhook.office.com/webhookb2/cded8eda-0293-4a54-bf0b-9dbeacbf20d2@3ac94b33-9135-4821-9502-eafda6592a35/IncomingWebhook/b561677eecc94c2bbe0b06e7f4c91afd/81256bf4-92ac-4ec8-9f12-0ac67f29b6ea
+image:
+  repository: quay.io/prometheusmsteams/prometheus-msteams
+  tag: v1.5.0
+replicaCount: 1
+
+## Specify the custom message card template for MS teams
+customCardTemplate: |
+  {{ define "teams.card" }}
+  {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "{{- if eq .Status "resolved" -}}2DC72D
+                   {{- else if eq .Status "firing" -}}
+                      {{- if eq .CommonLabels.severity "critical" -}}8C1A1A
+                      {{- else if eq .CommonLabels.severity "warning" -}}FFA500
+                      {{- else -}}808080{{- end -}}
+                   {{- else -}}808080{{- end -}}",
+    "summary": "{{- if eq .CommonAnnotations.summary "" -}}
+                    {{- if eq .CommonAnnotations.message "" -}}
+                      {{- if eq .CommonLabels.alertname "" -}}
+                        Prometheus Alert
+                      {{- else -}}
+                        {{- .CommonLabels.alertname -}}
+                      {{- end -}}
+                    {{- else -}}
+                      {{- .CommonAnnotations.message -}}
+                    {{- end -}}
+                {{- else -}}
+                    {{- .CommonAnnotations.summary -}}
+                {{- end -}}",
+    "title": "{{ .CommonLabels.alertname }} ({{ .Status | title }})",
+    "sections": [ {{$externalUrl := .ExternalURL}}
+    {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
+      {
+        "activityTitle": "[{{ $alert.Annotations.description }}]({{ $externalUrl }})",
+        "facts": [
+          {{- range $key, $value := $alert.Annotations }}
+          {
+            {{- if ne $key "description" -}}
+              "name": "{{ $key }}",
+              "value": "{{ $value }}"
+            {{- end -}}
+          },
+          {{- end -}}
+          {{$c := counter}}{{ range $key, $value := $alert.Labels }}{{if call $c}},{{ end }}
+          {
+            "name": "{{ $key }}",
+            "value": "{{ $value }}"
+          }
+          {{- end }}
+        ],
+        "markdown": true
+      }
+      {{- end }}
+    ]
+  }
+  {{ end }}
